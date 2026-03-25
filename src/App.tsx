@@ -3,6 +3,7 @@ import { Plus, Trash2, Calendar, DollarSign, AlertCircle, TrendingUp, CreditCard
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabase';
 import Auth from './Auth';
+import { redirectToCheckout } from './stripe';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 const FREE_LIMIT = 4;
@@ -57,6 +58,17 @@ function App() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Check for successful payment redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('payment') === 'success' && user) {
+      localStorage.setItem(`premium_${user.id}`, 'true')
+      setIsPremium(true)
+      setShowPaywall(false)
+      window.history.replaceState({}, '''''''/''''''', '/')
+    }
+  }, [user])
 
   // Load data when user logs in
   useEffect(() => {
@@ -443,8 +455,11 @@ function App() {
                   ))}
                 </div>
               </div>
-              <button className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl font-semibold text-black transition-all mb-3">
-                Jetzt upgraden → (Stripe kommt bald)
+              <button
+                onClick={() => user && redirectToCheckout(user.email!)}
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl font-semibold text-black transition-all mb-3"
+              >
+                Jetzt upgraden → 2,99€/Monat
               </button>
               <button onClick={() => setShowPaywall(false)} className="w-full py-3 text-gray-500 hover:text-gray-400 text-sm transition-colors">Vielleicht später</button>
             </motion.div>
