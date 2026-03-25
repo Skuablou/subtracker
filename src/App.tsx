@@ -181,11 +181,16 @@ function App() {
             <p className="text-gray-400 mt-2">Behalte deine Abonnements im Blick</p>
           </div>
           <div className="flex items-center gap-3">
-            {!isPremium && (
-              <button onClick={() => setShowPaywall(true)} className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl text-amber-400 text-sm font-medium hover:from-amber-500/30 transition-all">
-                <Crown className="w-4 h-4" /> Premium
-              </button>
-            )}
+      {!isPremium && (
+  <button onClick={() => setShowPaywall(true)} className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl text-amber-400 text-sm font-medium hover:from-amber-500/30 transition-all">
+    <Crown className="w-4 h-4" /> Premium
+  </button>
+)}
+{isPremium && (
+  <button onClick={() => window.open('https://billing.stripe.com/p/login/28EbJ3gB28dT2ZL9PxgA800', '_blank')} className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl text-amber-400 text-sm font-medium hover:from-amber-500/30 transition-all">
+    <Crown className="w-4 h-4" /> Premium verwalten
+  </button>
+)}
             {/* User menu */}
             <div className="relative">
               <button onClick={() => setShowUserMenu(!showUserMenu)} className="w-9 h-9 bg-purple-600/20 border border-purple-500/30 rounded-xl flex items-center justify-center hover:bg-purple-600/30 transition-colors">
