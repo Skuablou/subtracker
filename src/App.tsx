@@ -31,9 +31,6 @@ const categories = [
 
 const billingCycles = [
   { value: 1, label: 'Monatlich' },
-  { value: 2, label: 'Alle 2 Monate' },
-  { value: 3, label: 'Alle 3 Monate' },
-  { value: 6, label: 'Alle 6 Monate' },
   { value: 12, label: 'Jährlich' },
 ];
 
@@ -448,7 +445,7 @@ function App() {
                 <div className="text-3xl font-bold text-amber-400 mb-1">2,99€</div>
                 <div className="text-gray-400 text-sm">pro Monat</div>
                 <div className="mt-3 space-y-2 text-sm text-left">
-                  {['Unbegrenzte Abos', 'Keine Werbung', 'Früher Zugang zu neuen Features'].map(f => (
+                  {['Unbegrenzte Abos', 'Früher Zugang zu neuen Features'].map(f => (
                     <div key={f} className="flex items-center gap-2 text-gray-300">
                       <div className="w-1.5 h-1.5 bg-amber-400 rounded-full shrink-0" />{f}
                     </div>
