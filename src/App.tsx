@@ -56,17 +56,6 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check for successful payment redirect
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('payment') === 'success' && user) {
-      localStorage.setItem(`premium_${user.id}`, 'true')
-      setIsPremium(true)
-      setShowPaywall(false)
-      window.history.replaceState({}, '', '/')
-    }
-  }, [user])
-
   // Load data when user logs in
   useEffect(() => {
     if (!user) { setSubscriptions([]); setIsPremium(false); return; }
@@ -75,6 +64,13 @@ function App() {
 
   const loadUserData = async () => {
     if (!user) return;
+    // Check payment success first
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('payment') === 'success') {
+      localStorage.setItem(`premium_${user.id}`, 'true')
+      setShowPaywall(false)
+      window.history.replaceState({}, '', '/')
+    }
     // Load subscriptions from localStorage keyed by user id
     const saved = localStorage.getItem(`subs_${user.id}`);
     if (saved) {
