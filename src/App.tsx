@@ -66,7 +66,7 @@ function App() {
       localStorage.setItem(`premium_${user.id}`, 'true')
       setIsPremium(true)
       setShowPaywall(false)
-      window.history.replaceState({}, '''''''/''''''', '/')
+      window.history.replaceState({}, '', '/')
     }
   }, [user])
 
