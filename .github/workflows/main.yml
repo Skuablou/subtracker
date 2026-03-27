@@ -9,11 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -38,6 +33,12 @@ jobs:
             -keypass Subtracker123 \
             -dname "CN=SubTracker, OU=App, O=SubTracker, L=City, S=State, C=US"
 
+      - name: Configure Bubblewrap JDK
+        run: |
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\": \"$JAVA_HOME\", \"androidSdkPath\": \"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
+          cat ~/.bubblewrap/config.json
+
       - name: Init TWA
         run: |
           mkdir twa-app && cd twa-app
@@ -55,8 +56,7 @@ jobs:
             --signingKeyPath ../subtracker.keystore \
             --signingKeyAlias subtracker \
             --signingKeyStorePassword Subtracker123 \
-            --signingKeyPassword Subtracker123 \
-            --jdkPath "$JAVA_HOME"
+            --signingKeyPassword Subtracker123
 
       - name: Build APK
         run: cd twa-app && bubblewrap build --skipPwaValidation
