@@ -6,9 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BUBBLEWRAP_KEYSTORE_PASSWORD: Subtracker123
-      BUBBLEWRAP_KEY_PASSWORD: Subtracker123
     steps:
       - uses: actions/checkout@v4
 
@@ -21,64 +18,135 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Bubblewrap and Expect
-        run: |
-          npm install -g @bubblewrap/cli
-          sudo apt-get install -y expect
-
       - name: Generate Keystore
         run: |
           keytool -genkey -v \
             -keystore subtracker.keystore \
             -alias subtracker \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass Subtracker123 \
-            -keypass Subtracker123 \
-            -dname "CN=SubTracker, OU=App, O=SubTracker, L=City, S=State, C=US"
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass Subtracker123 -keypass Subtracker123 \
+            -dname "CN=SubTracker,OU=App,O=SubTracker,L=City,S=State,C=US"
 
-      - name: Configure Bubblewrap
+      - name: Create Android TWA Project
         run: |
-          mkdir -p ~/.bubblewrap
-          printf '{"jdkPath":"%s","androidSdkPath":"%s"}' "$JAVA_HOME" "$ANDROID_SDK_ROOT" > ~/.bubblewrap/config.json
-          cat ~/.bubblewrap/config.json
+          sudo apt-get install -y imagemagick
 
-      - name: Init TWA Project
-        run: |
-          mkdir -p twa-app
-          cd twa-app
-          expect << 'EXPECT_EOF'
-          set timeout 60
-          spawn bubblewrap init --manifest https://subtracker-snowy.vercel.app/manifest.json
-          expect {
-            "Path to existing signing key" { send "../subtracker.keystore\r"; exp_continue }
-            "Key alias"                    { send "subtracker\r"; exp_continue }
-            "Key store password"           { send "Subtracker123\r"; exp_continue }
-            "Key password"                 { send "Subtracker123\r"; exp_continue }
-            "Package ID"                   { send "com.subtracker.app\r"; exp_continue }
-            "? "                           { send "\r"; exp_continue }
-            eof
+          mkdir -p twa-app/app/src/main/res/values
+          for dpi in hdpi mdpi xhdpi xxhdpi xxxhdpi; do
+            mkdir -p twa-app/app/src/main/res/mipmap-${dpi}
+          done
+
+          convert -size 72x72   xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          convert -size 48x48   xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          convert -size 96x96   xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          convert -size 144x144 xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          convert -size 192x192 xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+          cat > twa-app/app/src/main/res/values/strings.xml << 'RESEOF'
+          <resources>
+              <string name="app_name">SubTracker</string>
+          </resources>
+          RESEOF
+
+          cat > twa-app/app/src/main/AndroidManifest.xml << 'MANEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.subtracker.app">
+              <uses-permission android:name="android.permission.INTERNET"/>
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="@string/app_name"
+                  android:supportsRtl="true">
+                  <activity
+                      android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+                      android:exported="true">
+                      <meta-data
+                          android:name="android.support.customtabs.trusted.DEFAULT_URL"
+                          android:value="https://subtracker-snowy.vercel.app" />
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                      <intent-filter android:autoVerify="true">
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+                          <data android:scheme="https"
+                              android:host="subtracker-snowy.vercel.app" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          MANEOF
+
+          cat > twa-app/app/build.gradle << 'APPEOF'
+          plugins {
+              id 'com.android.application'
           }
-          EXPECT_EOF
-          ls -la
+          android {
+              compileSdk 33
+              defaultConfig {
+                  applicationId "com.subtracker.app"
+                  minSdk 21
+                  targetSdk 33
+                  versionCode 1
+                  versionName "1.0"
+              }
+              signingConfigs {
+                  release {
+                      storeFile file("../../subtracker.keystore")
+                      storePassword "Subtracker123"
+                      keyAlias "subtracker"
+                      keyPassword "Subtracker123"
+                  }
+              }
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                      minifyEnabled false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_1_8
+                  targetCompatibility JavaVersion.VERSION_1_8
+              }
+          }
+          dependencies {
+              implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.3.0'
+          }
+          APPEOF
+
+          cat > twa-app/build.gradle << 'ROOTEOF'
+          buildscript {
+              repositories { google(); mavenCentral() }
+              dependencies { classpath 'com.android.tools.build:gradle:7.4.2' }
+          }
+          allprojects {
+              repositories { google(); mavenCentral() }
+          }
+          ROOTEOF
+
+          cat > twa-app/settings.gradle << 'SETEOF'
+          rootProject.name = "SubTracker"
+          include ':app'
+          SETEOF
+
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > twa-app/local.properties
+
+          curl -sL https://services.gradle.org/distributions/gradle-7.6-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          cd twa-app && /tmp/gradle-7.6/bin/gradle wrapper --gradle-version 7.6 --distribution-type bin
+          chmod +x gradlew
 
       - name: Build APK
         run: |
           cd twa-app
-          expect << 'EXPECT_EOF'
-          set timeout 600
-          spawn bubblewrap build --skipPwaValidation
-          expect {
-            "regenerate" { send "n\r"; exp_continue }
-            "? "         { send "\r"; exp_continue }
-            eof
-          }
-          EXPECT_EOF
-          ls -la app-release-signed.apk
+          ./gradlew assembleRelease
+          ls -la app/build/outputs/apk/release/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: subtracker-apk
-          path: twa-app/app-release-signed.apk
+          path: twa-app/app/build/outputs/apk/release/app-release.apk
