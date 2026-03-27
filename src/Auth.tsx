@@ -127,7 +127,7 @@ export default function Auth() {
           <p className="text-center text-gray-500 text-sm mt-4">
             {mode === 'login' ? 'Don\'t have an account? ' : 'Already have an account? '}
             <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setMessage('') }} className="text-purple-400 hover:text-purple-300">
-              {mode === 'login' ? 'Registrieren' : 'Anmelden'}
+              {mode === 'login' ? 'Register' : 'Sign in'}
             </button>
           </p>
         </div>
