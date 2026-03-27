@@ -44,45 +44,24 @@ jobs:
           printf '{"jdkPath":"%s","androidSdkPath":"%s"}' "$JAVA_HOME" "$ANDROID_SDK_ROOT" > ~/.bubblewrap/config.json
           cat ~/.bubblewrap/config.json
 
-      - name: Create TWA Manifest
+      - name: Init TWA Project
         run: |
           mkdir -p twa-app
-          cat > twa-app/twa-manifest.json << 'MANIFEST_EOF'
-          {
-            "packageId": "com.subtracker.app",
-            "host": "subtracker-snowy.vercel.app",
-            "name": "SubTracker",
-            "launcherName": "SubTracker",
-            "display": "standalone",
-            "themeColor": "#0a0a0f",
-            "navigationColor": "#0a0a0f",
-            "backgroundColor": "#0a0a0f",
-            "enableNotifications": false,
-            "startUrl": "/",
-            "iconUrl": "https://subtracker-snowy.vercel.app/icons/icon-512.png",
-            "maskableIconUrl": "https://subtracker-snowy.vercel.app/icons/icon-512.png",
-            "monochromeIconUrl": "https://subtracker-snowy.vercel.app/icons/icon-512.png",
-            "splashScreenFadeOutDuration": 300,
-            "signingKey": {
-              "path": "../subtracker.keystore",
-              "alias": "subtracker"
-            },
-            "appVersionName": "1.0.0",
-            "appVersionCode": 1,
-            "shortcuts": [],
-            "generatorApp": "bubblewrap-cli",
-            "webManifestUrl": "https://subtracker-snowy.vercel.app/manifest.json",
-            "fallbackType": "customtabs",
-            "features": {},
-            "alphaDependencies": { "enabled": false },
-            "enableSiteSettingsShortcut": true,
-            "isChromeOSOnly": false,
-            "isMetaQuest": false,
-            "minSdkVersion": 19,
-            "orientation": "default",
-            "fingerprints": []
+          cd twa-app
+          expect << 'EXPECT_EOF'
+          set timeout 60
+          spawn bubblewrap init --manifest https://subtracker-snowy.vercel.app/manifest.json
+          expect {
+            "Path to existing signing key" { send "../subtracker.keystore\r"; exp_continue }
+            "Key alias"                    { send "subtracker\r"; exp_continue }
+            "Key store password"           { send "Subtracker123\r"; exp_continue }
+            "Key password"                 { send "Subtracker123\r"; exp_continue }
+            "Package ID"                   { send "com.subtracker.app\r"; exp_continue }
+            "? "                           { send "\r"; exp_continue }
+            eof
           }
-          MANIFEST_EOF
+          EXPECT_EOF
+          ls -la
 
       - name: Build APK
         run: |
@@ -92,7 +71,7 @@ jobs:
           spawn bubblewrap build --skipPwaValidation
           expect {
             "regenerate" { send "n\r"; exp_continue }
-            "Domain:"    { send "\r"; exp_continue }
+            "? "         { send "\r"; exp_continue }
             eof
           }
           EXPECT_EOF
