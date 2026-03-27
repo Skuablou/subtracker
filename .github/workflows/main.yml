@@ -1,5 +1,4 @@
 name: Build Android APK
-
 on:
   workflow_dispatch:
 
@@ -18,122 +17,120 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Generate Keystore
+      - name: Decode Keystore
         run: |
-          keytool -genkey -v \
-            -keystore subtracker.keystore \
-            -alias subtracker \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass Subtracker123 -keypass Subtracker123 \
-            -dname "CN=SubTracker,OU=App,O=SubTracker,L=City,S=State,C=US"
+          echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > subtracker.keystore
 
       - name: Create Android TWA Project
         run: |
           sudo apt-get install -y imagemagick
-
           mkdir -p twa-app/app/src/main/res/values
           for dpi in hdpi mdpi xhdpi xxhdpi xxxhdpi; do
             mkdir -p twa-app/app/src/main/res/mipmap-${dpi}
           done
-
           convert -size 72x72   xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-hdpi/ic_launcher.png
           convert -size 48x48   xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-mdpi/ic_launcher.png
           convert -size 96x96   xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-xhdpi/ic_launcher.png
           convert -size 144x144 xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
           convert -size 192x192 xc:'#0a0a0f' twa-app/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
-          cat > twa-app/app/src/main/res/values/strings.xml << 'RESEOF'
+          cat > twa-app/app/src/main/res/values/strings.xml << 'XMLEOF'
+          <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <string name="app_name">SubTracker</string>
           </resources>
-          RESEOF
+          XMLEOF
 
-          cat > twa-app/app/src/main/AndroidManifest.xml << 'MANEOF'
+          cat > twa-app/app/src/main/AndroidManifest.xml << 'XMLEOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               package="com.subtracker.app">
-              <uses-permission android:name="android.permission.INTERNET"/>
               <application
                   android:allowBackup="true"
                   android:icon="@mipmap/ic_launcher"
                   android:label="@string/app_name"
-                  android:supportsRtl="true">
+                  android:theme="@android:style/Theme.NoTitleBar">
                   <activity
                       android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
                       android:exported="true">
                       <meta-data
                           android:name="android.support.customtabs.trusted.DEFAULT_URL"
                           android:value="https://subtracker-snowy.vercel.app" />
+                      <meta-data
+                          android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
+                          android:value="@color/colorPrimary" />
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
                       <intent-filter android:autoVerify="true">
-                          <action android:name="android.intent.action.VIEW" />
-                          <category android:name="android.intent.category.DEFAULT" />
-                          <category android:name="android.intent.category.BROWSABLE" />
-                          <data android:scheme="https"
-                              android:host="subtracker-snowy.vercel.app" />
+                          <action android:name="android.intent.action.VIEW"/>
+                          <category android:name="android.intent.category.DEFAULT"/>
+                          <category android:name="android.intent.category.BROWSABLE"/>
+                          <data android:scheme="https" android:host="subtracker-snowy.vercel.app"/>
                       </intent-filter>
                   </activity>
               </application>
           </manifest>
-          MANEOF
+          XMLEOF
 
-          cat > twa-app/app/build.gradle << 'APPEOF'
-          plugins {
-              id 'com.android.application'
-          }
+          mkdir -p twa-app/app/src/main/res/values
+          cat > twa-app/app/src/main/res/values/colors.xml << 'XMLEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="colorPrimary">#0a0a0f</color>
+          </resources>
+          XMLEOF
+
+          cat > twa-app/app/build.gradle << 'GEOF'
+          apply plugin: 'com.android.application'
           android {
-              compileSdk 33
+              compileSdkVersion 33
               defaultConfig {
                   applicationId "com.subtracker.app"
-                  minSdk 21
-                  targetSdk 33
+                  minSdkVersion 21
+                  targetSdkVersion 33
                   versionCode 1
                   versionName "1.0"
               }
               signingConfigs {
                   release {
-                      storeFile file("../../subtracker.keystore")
-                      storePassword "Subtracker123"
-                      keyAlias "subtracker"
-                      keyPassword "Subtracker123"
+                      storeFile file('../../subtracker.keystore')
+                      storePassword System.getenv('KEYSTORE_PASSWORD')
+                      keyAlias System.getenv('KEY_ALIAS')
+                      keyPassword System.getenv('KEY_PASSWORD')
                   }
               }
               buildTypes {
                   release {
-                      signingConfig signingConfigs.release
                       minifyEnabled false
+                      signingConfig signingConfigs.release
                   }
-              }
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_1_8
-                  targetCompatibility JavaVersion.VERSION_1_8
               }
           }
           dependencies {
               implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.3.0'
           }
-          APPEOF
+          GEOF
 
-          cat > twa-app/build.gradle << 'ROOTEOF'
+          cat > twa-app/build.gradle << 'GEOF'
           buildscript {
               repositories { google(); mavenCentral() }
               dependencies { classpath 'com.android.tools.build:gradle:7.4.2' }
           }
-          allprojects {
-              repositories { google(); mavenCentral() }
-          }
-          ROOTEOF
+          allprojects { repositories { google(); mavenCentral() } }
+          GEOF
 
-          cat > twa-app/settings.gradle << 'SETEOF'
-          rootProject.name = "SubTracker"
+          cat > twa-app/settings.gradle << 'GEOF'
           include ':app'
-          SETEOF
+          GEOF
 
           echo "sdk.dir=$ANDROID_SDK_ROOT" > twa-app/local.properties
-          printf 'android.useAndroidX=true\nandroid.enableJetifier=true\n' > twa-app/gradle.properties
+
+          cat > twa-app/gradle.properties << 'GEOF'
+          android.useAndroidX=true
+          android.enableJetifier=true
+          GEOF
 
           curl -sL https://services.gradle.org/distributions/gradle-7.6-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
@@ -141,6 +138,10 @@ jobs:
           chmod +x gradlew
 
       - name: Build APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd twa-app
           ./gradlew assembleRelease
