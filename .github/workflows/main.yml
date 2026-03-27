@@ -41,7 +41,7 @@ jobs:
       - name: Init TWA
         run: |
           mkdir twa-app && cd twa-app
-          yes | bubblewrap init \
+          bubblewrap init \
             --manifest "https://subtracker-snowy.vercel.app/manifest.json" \
             --directory . \
             --packageId "com.subtracker.app" \
@@ -55,7 +55,8 @@ jobs:
             --signingKeyPath ../subtracker.keystore \
             --signingKeyAlias subtracker \
             --signingKeyStorePassword Subtracker123 \
-            --signingKeyPassword Subtracker123
+            --signingKeyPassword Subtracker123 \
+            --jdkPath "$JAVA_HOME"
 
       - name: Build APK
         run: cd twa-app && bubblewrap build --skipPwaValidation
