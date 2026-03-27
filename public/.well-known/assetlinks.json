@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.subtracker.app",
+    "sha256_cert_fingerprints": [
+      "3B:03:7F:B6:62:F7:23:70:5A:2A:4B:6A:8C:B6:68:3C:90:76:AC:7D:33:2E:B6:83:59:9A:9F:1F:6E:B6:FA:EE"
+    ]
+  }
+}]
