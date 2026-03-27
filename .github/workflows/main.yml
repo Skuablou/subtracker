@@ -1,0 +1,55 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Init TWA
+        run: |
+          mkdir twa-app && cd twa-app
+          bubblewrap init \
+            --manifest "https://subtracker-snowy.vercel.app/manifest.json" \
+            --directory . \
+            --packageId "com.subtracker.app" \
+            --name "SubTracker" \
+            --shortName "SubTracker" \
+            --themeColor "#0a0a0f" \
+            --backgroundColor "#0a0a0f" \
+            --startUrl "/" \
+            --iconUrl "https://subtracker-snowy.vercel.app/icons/icon-512.png" \
+            --maskableIconUrl "https://subtracker-snowy.vercel.app/icons/icon-512.png" \
+            --signingKeyPath ../subtracker.keystore \
+            --signingKeyAlias subtracker \
+            --signingKeyStorePassword Subtracker123 \
+            --signingKeyPassword Subtracker123
+
+      - name: Build
+        run: cd twa-app && bubblewrap build --skipPwaValidation
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: subtracker-apk
+          path: twa-app/app-release-signed.apk
