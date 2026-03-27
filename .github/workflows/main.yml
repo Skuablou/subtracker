@@ -7,29 +7,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
+      - name: Generate Keystore
+        run: |
+          keytool -genkey -v \
+            -keystore subtracker.keystore \
+            -alias subtracker \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass Subtracker123 \
+            -keypass Subtracker123 \
+            -dname "CN=SubTracker, OU=App, O=SubTracker, L=City, S=State, C=US"
+
       - name: Init TWA
         run: |
           mkdir twa-app && cd twa-app
-          bubblewrap init \
+          yes | bubblewrap init \
             --manifest "https://subtracker-snowy.vercel.app/manifest.json" \
             --directory . \
             --packageId "com.subtracker.app" \
@@ -45,7 +57,7 @@ jobs:
             --signingKeyStorePassword Subtracker123 \
             --signingKeyPassword Subtracker123
 
-      - name: Build
+      - name: Build APK
         run: cd twa-app && bubblewrap build --skipPwaValidation
 
       - name: Upload APK
