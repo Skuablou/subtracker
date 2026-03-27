@@ -21,8 +21,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Bubblewrap
-        run: npm install -g @bubblewrap/cli
+      - name: Install Bubblewrap and Expect
+        run: |
+          npm install -g @bubblewrap/cli
+          sudo apt-get install -y expect
 
       - name: Generate Keystore
         run: |
@@ -83,7 +85,18 @@ jobs:
           MANIFEST_EOF
 
       - name: Build APK
-        run: cd twa-app && bubblewrap build --skipPwaValidation
+        run: |
+          cd twa-app
+          expect << 'EXPECT_EOF'
+          set timeout 600
+          spawn bubblewrap build --skipPwaValidation
+          expect {
+            "regenerate" { send "n\r"; exp_continue }
+            "Domain:"    { send "\r"; exp_continue }
+            eof
+          }
+          EXPECT_EOF
+          ls -la app-release-signed.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
