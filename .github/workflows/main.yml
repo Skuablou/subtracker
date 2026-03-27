@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BUBBLEWRAP_KEYSTORE_PASSWORD: Subtracker123
+      BUBBLEWRAP_KEY_PASSWORD: Subtracker123
     steps:
       - uses: actions/checkout@v4
 
@@ -33,30 +36,51 @@ jobs:
             -keypass Subtracker123 \
             -dname "CN=SubTracker, OU=App, O=SubTracker, L=City, S=State, C=US"
 
-      - name: Configure Bubblewrap JDK
+      - name: Configure Bubblewrap
         run: |
           mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\": \"$JAVA_HOME\", \"androidSdkPath\": \"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
+          printf '{"jdkPath":"%s","androidSdkPath":"%s"}' "$JAVA_HOME" "$ANDROID_SDK_ROOT" > ~/.bubblewrap/config.json
           cat ~/.bubblewrap/config.json
 
-      - name: Init TWA
+      - name: Create TWA Manifest
         run: |
-          mkdir twa-app && cd twa-app
-          bubblewrap init \
-            --manifest "https://subtracker-snowy.vercel.app/manifest.json" \
-            --directory . \
-            --packageId "com.subtracker.app" \
-            --name "SubTracker" \
-            --shortName "SubTracker" \
-            --themeColor "#0a0a0f" \
-            --backgroundColor "#0a0a0f" \
-            --startUrl "/" \
-            --iconUrl "https://subtracker-snowy.vercel.app/icons/icon-512.png" \
-            --maskableIconUrl "https://subtracker-snowy.vercel.app/icons/icon-512.png" \
-            --signingKeyPath ../subtracker.keystore \
-            --signingKeyAlias subtracker \
-            --signingKeyStorePassword Subtracker123 \
-            --signingKeyPassword Subtracker123
+          mkdir -p twa-app
+          cat > twa-app/twa-manifest.json << 'MANIFEST_EOF'
+          {
+            "packageId": "com.subtracker.app",
+            "host": "subtracker-snowy.vercel.app",
+            "name": "SubTracker",
+            "launcherName": "SubTracker",
+            "display": "standalone",
+            "themeColor": "#0a0a0f",
+            "navigationColor": "#0a0a0f",
+            "backgroundColor": "#0a0a0f",
+            "enableNotifications": false,
+            "startUrl": "/",
+            "iconUrl": "https://subtracker-snowy.vercel.app/icons/icon-512.png",
+            "maskableIconUrl": "https://subtracker-snowy.vercel.app/icons/icon-512.png",
+            "monochromeIconUrl": "https://subtracker-snowy.vercel.app/icons/icon-512.png",
+            "splashScreenFadeOutDuration": 300,
+            "signingKey": {
+              "path": "../subtracker.keystore",
+              "alias": "subtracker"
+            },
+            "appVersionName": "1.0.0",
+            "appVersionCode": 1,
+            "shortcuts": [],
+            "generatorApp": "bubblewrap-cli",
+            "webManifestUrl": "https://subtracker-snowy.vercel.app/manifest.json",
+            "fallbackType": "customtabs",
+            "features": {},
+            "alphaDependencies": { "enabled": false },
+            "enableSiteSettingsShortcut": true,
+            "isChromeOSOnly": false,
+            "isMetaQuest": false,
+            "minSdkVersion": 19,
+            "orientation": "default",
+            "fingerprints": []
+          }
+          MANIFEST_EOF
 
       - name: Build APK
         run: cd twa-app && bubblewrap build --skipPwaValidation
