@@ -16,12 +16,12 @@ export default function Auth() {
     setError('')
     setMessage('')
     setLoading(true)
-    if (!email || !password) { setError('Bitte fÃ¼ll alle Felder aus.'); setLoading(false); return }
+    if (!email || !password) { setError('Please fill out all fields.'); setLoading(false); return }
 
     if (mode === 'register') {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) setError(error.message)
-      else setMessage('BestÃ¤tigungs-Email gesendet! Bitte check dein Postfach.')
+      else setMessage('Verification email sent! Please check your inbox.')
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setError('Incorrect email or password.')
@@ -62,7 +62,7 @@ export default function Auth() {
         {/* Card */}
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
           <h2 className="text-xl font-semibold mb-6">
-            {mode === 'login' ? 'Willkommen zurÃ¼ck' : 'Create account'}
+            {mode === 'login' ? 'Welcome back' : 'Create account'}
           </h2>
 
           {/* Google Login */}
