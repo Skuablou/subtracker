@@ -16,15 +16,15 @@ export default function Auth() {
     setError('')
     setMessage('')
     setLoading(true)
-    if (!email || !password) { setError('Bitte füll alle Felder aus.'); setLoading(false); return }
+    if (!email || !password) { setError('Bitte fÃ¼ll alle Felder aus.'); setLoading(false); return }
 
     if (mode === 'register') {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) setError(error.message)
-      else setMessage('Bestätigungs-Email gesendet! Bitte check dein Postfach.')
+      else setMessage('BestÃ¤tigungs-Email gesendet! Bitte check dein Postfach.')
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) setError('Email oder Passwort falsch.')
+      if (error) setError('Incorrect email or password.')
     }
     setLoading(false)
   }
@@ -56,13 +56,13 @@ export default function Auth() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">
             SubTracker
           </h1>
-          <p className="text-gray-400 mt-1 text-sm">Behalte deine Abos im Blick</p>
+          <p className="text-gray-400 mt-1 text-sm">Track your subscriptions</p>
         </div>
 
         {/* Card */}
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
           <h2 className="text-xl font-semibold mb-6">
-            {mode === 'login' ? 'Willkommen zurück' : 'Konto erstellen'}
+            {mode === 'login' ? 'Willkommen zurÃ¼ck' : 'Create account'}
           </h2>
 
           {/* Google Login */}
@@ -76,12 +76,12 @@ export default function Auth() {
               <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
               <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
             </svg>
-            Mit Google anmelden
+            Sign in with Google
           </button>
 
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-white/10" />
-            <span className="text-gray-500 text-xs">oder</span>
+            <span className="text-gray-500 text-xs">or</span>
             <div className="flex-1 h-px bg-white/10" />
           </div>
 
@@ -101,7 +101,7 @@ export default function Auth() {
               <Lock className="absolute left-3 top-3.5 w-4 h-4 text-gray-500" />
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Passwort"
+                placeholder="Password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -121,11 +121,11 @@ export default function Auth() {
             disabled={loading}
             className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-xl font-medium transition-colors"
           >
-            {loading ? 'Laden...' : mode === 'login' ? 'Anmelden' : 'Registrieren'}
+            {loading ? 'Loading...' : mode === 'login' ? 'Sign in' : 'Register'}
           </button>
 
           <p className="text-center text-gray-500 text-sm mt-4">
-            {mode === 'login' ? 'Noch kein Konto? ' : 'Schon ein Konto? '}
+            {mode === 'login' ? 'Don\'t have an account? ' : 'Already have an account? '}
             <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setMessage('') }} className="text-purple-400 hover:text-purple-300">
               {mode === 'login' ? 'Registrieren' : 'Anmelden'}
             </button>
