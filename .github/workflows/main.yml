@@ -133,6 +133,7 @@ jobs:
           SETEOF
 
           echo "sdk.dir=$ANDROID_SDK_ROOT" > twa-app/local.properties
+          printf 'android.useAndroidX=true\nandroid.enableJetifier=true\n' > twa-app/gradle.properties
 
           curl -sL https://services.gradle.org/distributions/gradle-7.6-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
