@@ -66,43 +66,41 @@ function App() {
   const loadUserData = async () => {
     if (!user) return;
     // Check payment success first
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'success') {
-      localStorage.setItem(`premium_${user.id}`, 'true')
-      setShowPaywall(false)
-      window.history.replaceState({}, '', '/')
+      await supabase.from('profiles').update({ is_premium: true }).eq('id', user.id);
+      setShowPaywall(false);
+      window.history.replaceState({}, '', '/');
     }
-    // Load subscriptions from localStorage keyed by user id
-    const saved = localStorage.getItem(`subs_${user.id}`);
-    if (saved) {
-      setSubscriptions(JSON.parse(saved));
-    } else {
-      setSubscriptions([
-        { id: '1', name: 'Netflix', amount: 15.99, billingDay: 15, billingCycle: 1, category: 'Streaming', color: '#E50914' },
-        { id: '2', name: 'Spotify', amount: 9.99, billingDay: 1, billingCycle: 1, category: 'Music', color: '#1DB954' },
-      ]);
+    // Load premium status from Supabase
+    const { data: profile } = await supabase.from('profiles').select('is_premium').eq('id', user.id).single();
+    setIsPremium(profile?.is_premium ?? false);
+    // Load subscriptions from Supabase
+    const { data: subs } = await supabase.from('subscriptions').select('*').eq('user_id', user.id);
+    if (subs) {
+      setSubscriptions(subs.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        amount: Number(s.amount),
+        billingDay: s.billing_day,
+        billingCycle: s.billing_cycle,
+        category: s.category,
+        color: s.color,
+      })));
     }
-    // Load premium status
-    const premium = localStorage.getItem(`premium_${user.id}`) === 'true';
-    setIsPremium(premium);
   };
 
   // Save currency preference
   useEffect(() => { localStorage.setItem('currency', currency); }, [currency]);
 
-  // Save subscriptions whenever they change
-  useEffect(() => {
-    if (!user) return;
-    localStorage.setItem(`subs_${user.id}`, JSON.stringify(subscriptions));
-  }, [subscriptions, user]);
 
   const handleAddClick = () => {
     if (!isPremium && subscriptions.length >= FREE_LIMIT) setShowPaywall(true);
     else setShowModal(true);
   };
 
-  const addSubscription = () => {
-    if (!newSub.name || !newSub.amount) return;
+  const addSubscription = async () => {
+    if (!newSub.name || !newSub.amount || !user) return;
     const category = categories.find(c => c.name === newSub.category);
     const sub: Subscription = {
       id: Date.now().toString(),
@@ -113,12 +111,25 @@ function App() {
       category: newSub.category,
       color: category?.color || '#6B7280',
     };
+    await supabase.from('subscriptions').insert({
+      id: sub.id,
+      user_id: user.id,
+      name: sub.name,
+      amount: sub.amount,
+      billing_day: sub.billingDay,
+      billing_cycle: sub.billingCycle,
+      category: sub.category,
+      color: sub.color,
+    });
     setSubscriptions([...subscriptions, sub]);
     setNewSub({ name: '', amount: '', billingDay: '1', billingCycle: '1', category: 'Streaming' });
     setShowModal(false);
   };
 
-  const deleteSubscription = (id: string) => setSubscriptions(subscriptions.filter(s => s.id !== id));
+  const deleteSubscription = async (id: string) => {
+    if (user) await supabase.from('subscriptions').delete().eq('id', id).eq('user_id', user.id);
+    setSubscriptions(subscriptions.filter(s => s.id !== id));
+  };
 
   const getMonthlyEquivalent = (sub: Subscription) => sub.amount / sub.billingCycle;
   const monthlyTotal = subscriptions.reduce((sum, s) => sum + getMonthlyEquivalent(s), 0);
