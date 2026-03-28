@@ -250,7 +250,7 @@ function App() {
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {subscriptions.length >= FREE_LIMIT
-                    ? <span className="text-amber-400">Limit erreicht â <button onClick={() => setShowPaywall(true)} className="underline">Upgrade</button></span>
+                    ? <span className="text-amber-400">Limit reached → <button onClick={() => setShowPaywall(true)} className="underline">Upgrade</button></span>
                     : `${FREE_LIMIT - subscriptions.length} left free`}
                 </p>
               </div>
