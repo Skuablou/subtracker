@@ -31,7 +31,7 @@ const categories = [
 
 const billingCycles = [
   { value: 1, label: 'Monthly' },
-  { value: 12, label: 'JÃ¤hrlich' },
+  { value: 12, label: 'Yearly' },
 ];
 
 function App() {
@@ -140,7 +140,7 @@ function App() {
 
   const getBillingCycleLabel = (cycle: number) => {
     if (cycle === 1) return 'Monthly';
-    if (cycle === 12) return 'JÃ¤hrlich';
+    if (cycle === 12) return 'Yearly';
     return `Every ${cycle} months`;
   };
 
@@ -214,7 +214,7 @@ function App() {
             className="bg-gradient-to-br from-purple-600/20 to-purple-900/20 backdrop-blur-xl border border-purple-500/20 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 bg-purple-500/20 rounded-lg"><CreditCard className="w-5 h-5 text-purple-400" /></div>
-              <span className="text-gray-400 text-sm">Monatlich (Ã)</span>
+              <span className="text-gray-400 text-sm">Monthly (avg)</span>
             </div>
             <p className="text-3xl font-bold">â¬{monthlyTotal.toFixed(2)}</p>
           </motion.div>
@@ -223,7 +223,7 @@ function App() {
             className="bg-gradient-to-br from-blue-600/20 to-blue-900/20 backdrop-blur-xl border border-blue-500/20 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 bg-blue-500/20 rounded-lg"><TrendingUp className="w-5 h-5 text-blue-400" /></div>
-              <span className="text-gray-400 text-sm">JÃ¤hrlich</span>
+              <span className="text-gray-400 text-sm">Yearly</span>
             </div>
             <p className="text-3xl font-bold">â¬{yearlyTotal.toFixed(2)}</p>
           </motion.div>
@@ -259,7 +259,7 @@ function App() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Your subscriptions</h2>
               <button onClick={handleAddClick} className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl font-medium text-sm transition-colors">
-                <Plus className="w-4 h-4" /> HinzufÃ¼gen
+                <Plus className="w-4 h-4" /> Add
               </button>
             </div>
 
@@ -298,7 +298,7 @@ function App() {
               <div className="text-center py-16 text-gray-600">
                 <CreditCard className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>No subscriptions yet</p>
-                <button onClick={handleAddClick} className="mt-3 text-purple-400 hover:text-purple-300 text-sm underline">Erstes Abo hinzufÃ¼gen</button>
+                <button onClick={handleAddClick} className="mt-3 text-purple-400 hover:text-purple-300 text-sm underline">Add your first subscription</button>
               </div>
             )}
 
@@ -308,7 +308,7 @@ function App() {
                 <div className="p-2 bg-amber-500/10 rounded-lg"><Crown className="w-5 h-5 text-amber-400" /></div>
                 <div>
                   <p className="text-sm font-medium text-amber-400">Track more subscriptions?</p>
-                  <p className="text-xs text-gray-500">Premium freischalten fÃ¼r unbegrenzte Abos</p>
+                  <p className="text-xs text-gray-500">Unlock Premium for unlimited subscriptions</p>
                 </div>
                 <Plus className="w-4 h-4 text-amber-400 ml-auto" />
               </motion.div>
@@ -319,7 +319,7 @@ function App() {
           <div className="lg:col-span-2 space-y-6">
             <div>
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-amber-400" /> NÃ¤chste Zahlungen
+                <AlertCircle className="w-5 h-5 text-amber-400" /> Upcoming payments
               </h2>
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
                 {upcomingPayments.length === 0
@@ -355,7 +355,7 @@ function App() {
                 <h3 className="font-semibold mb-3 flex items-center gap-2"><DollarSign className="w-4 h-4 text-blue-400" />Yearly projection</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between items-end">
-                    <span className="text-gray-400">NÃ¤chste 12 Monate</span>
+                    <span className="text-gray-400">Next 12 months</span>
                     <span className="text-2xl font-bold text-blue-400">â¬{yearlyTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-500"><span>Average/month</span><span>â¬{monthlyTotal.toFixed(2)}</span></div>
@@ -385,7 +385,7 @@ function App() {
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Betrag (â¬)</label>
+                  <label className="block text-sm text-gray-400 mb-2">Amount (€)</label>
                   <input type="number" step="0.01" value={newSub.amount} onChange={e => setNewSub({ ...newSub, amount: e.target.value })} placeholder="9.99"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors" />
                 </div>
@@ -418,7 +418,7 @@ function App() {
               </div>
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-medium transition-colors">Cancel</button>
-                <button onClick={addSubscription} className="flex-1 px-4 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-medium transition-colors">HinzufÃ¼gen</button>
+                <button onClick={addSubscription} className="flex-1 px-4 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-medium transition-colors">Add</button>
               </div>
             </motion.div>
           </motion.div>
@@ -436,12 +436,12 @@ function App() {
                 <Crown className="w-8 h-8 text-amber-400" />
               </div>
               <h2 className="text-2xl font-bold mb-2">Unlock Premium</h2>
-              <p className="text-gray-400 text-sm mb-6">Upgrade fÃ¼r unbegrenzte Abos.</p>
+              <p className="text-gray-400 text-sm mb-6">Upgrade for unlimited subscriptions.</p>
               <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
-                <div className="text-3xl font-bold text-amber-400 mb-1">2,99â¬</div>
+                <div className="text-3xl font-bold text-amber-400 mb-1">€2.99</div>
                 <div className="text-gray-400 text-sm">per month</div>
                 <div className="mt-3 space-y-2 text-sm text-left">
-                  {['Unlimited subscriptions', 'FrÃ¼her Zugang zu neuen Features'].map(f => (
+                  {['Unlimited subscriptions', 'Early access to new features'].map(f => (
                     <div key={f} className="flex items-center gap-2 text-gray-300">
                       <div className="w-1.5 h-1.5 bg-amber-400 rounded-full shrink-0" />{f}
                     </div>
@@ -454,7 +454,7 @@ function App() {
               >
                 Jetzt upgraden â 2,99â¬/Monat
               </button>
-              <button onClick={() => setShowPaywall(false)} className="w-full py-3 text-gray-500 hover:text-gray-400 text-sm transition-colors">Vielleicht spÃ¤ter</button>
+              <button onClick={() => setShowPaywall(false)} className="w-full py-3 text-gray-500 hover:text-gray-400 text-sm transition-colors">Maybe later</button>
             </motion.div>
           </motion.div>
         )}
